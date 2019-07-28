@@ -14,7 +14,7 @@ import static com.cipher.photo_locator.photolocator.MainActivity.calculateInSamp
 /**
  * Created by root on 7/27/18.
  */
-
+//wrote by kamyar haghani
 public class Photo_info_and_exif_data_structure {
     public String file_path,date;
     public Bitmap bitmap;
