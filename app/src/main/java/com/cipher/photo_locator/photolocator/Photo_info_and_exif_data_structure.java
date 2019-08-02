@@ -43,17 +43,7 @@ public class Photo_info_and_exif_data_structure {
         }
 
     }
-    public Bitmap load_image_bitmap_for_imidiate_use(){//to improve memory and performance,
-        // only load this data when view is getting bound in RecyclerView.Adapter in a non ui thread
 
-        BitmapFactory.Options options=new BitmapFactory.Options();
-        options.inJustDecodeBounds = true;
-        BitmapFactory.decodeFile(file_path,options);
-        options.inSampleSize=calculateInSampleSize(options,150,150);
-        options.inJustDecodeBounds = false;
-        this.bitmap= BitmapFactory.decodeFile(file_path,options);
-        return this.bitmap;
-    }
 
     public void load_image_bitmap(){
         //to improve memory and performance,
