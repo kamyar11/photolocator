@@ -83,7 +83,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             if (ActivityCompat.shouldShowRequestPermissionRationale(MainActivity.this,
                     Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
                 //it was just denied, let the user decide
-                Log.d("perm","md");
                 ActivityCompat.requestPermissions(MainActivity.this,
                         new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
                         WRITE_EXTERNAL_STORAGE_PERMISSION_REQUEST);
@@ -91,7 +90,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 ActivityCompat.requestPermissions(MainActivity.this,
                         new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
                         WRITE_EXTERNAL_STORAGE_PERMISSION_REQUEST);
-                Log.d("perm","md1");
                 //it was denied permanently
             }
         } else {
@@ -423,9 +421,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     @Override
     protected void onStop() {
         super.onStop();
-//        if(background_images_loader_thread !=null){
-//            background_images_loader_thread.stop();
-//        }
+
     }
 
     @Override
