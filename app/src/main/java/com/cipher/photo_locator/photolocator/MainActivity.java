@@ -1,11 +1,16 @@
 package com.cipher.photo_locator.photolocator;
 
+import android.Manifest;
 import android.annotation.TargetApi;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.CountDownTimer;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
@@ -32,6 +37,7 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.io.File;
+import java.security.Permission;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -52,7 +58,10 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
     private Thread background_images_loader_thread;
     private Button save_new_location;
     private int selected_image_offset=-1;
+    private static final int WRITE_EXTERNAL_STORAGE_PERMISSION_REQUEST=0;
     private static int Count_of_images_to_be_loaded_for_future_use=40;
+    private Bundle savedInstanceState;
+    private View permission_warning;
 
     @TargetApi(23)
     protected void askPermissions() {
@@ -63,11 +72,56 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         int requestCode = 200;
         requestPermissions(permissions, requestCode);
     }
+    @TargetApi(23)
+    private void handle_permission(){
+        if (ContextCompat.checkSelfPermission(MainActivity.this,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED) {
+            // Permission is not granted
+            // Should we show an explanation?
+
+            if (ActivityCompat.shouldShowRequestPermissionRationale(MainActivity.this,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+                //it was just denied, let the user decide
+                Log.d("perm","md");
+                ActivityCompat.requestPermissions(MainActivity.this,
+                        new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                        WRITE_EXTERNAL_STORAGE_PERMISSION_REQUEST);
+            } else {
+                ActivityCompat.requestPermissions(MainActivity.this,
+                        new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                        WRITE_EXTERNAL_STORAGE_PERMISSION_REQUEST);
+                Log.d("perm","md1");
+                //it was denied permanently
+            }
+        } else {
+            init_activity();
+        }
+    }
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        this.savedInstanceState=savedInstanceState;
         setContentView(R.layout.activity_main);
-        if(Build.VERSION.SDK_INT>22)askPermissions();
+        permission_warning=findViewById(R.id.permission_warrning);
+        findViewById(R.id.ask_permissions).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                handle_permission();
+            }
+        });
+        if(Build.VERSION.SDK_INT>22)handle_permission();
+
+        mapView=(MapView)findViewById(R.id.map_view);
+        mapView.onCreate(savedInstanceState);
+        mapView.getMapAsync(this);
+
+/*        The app does very limited actions which are dependent on read/write access to storage permission;
+         So we continue the rest of the app after the permissions have been grated by user;*/
+    }
+    public void init_activity(){
+        //we have permission now
+        permission_warning.setVisibility(View.GONE);
         linearLayoutManager=new LinearLayoutManager(this,LinearLayoutManager.HORIZONTAL,false);
         progressBar=(ProgressBar)findViewById(R.id.progressBar2);
         recyclerView=(RecyclerView)findViewById(R.id.images_list);
@@ -77,11 +131,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         adap=new fileadapter();
         recyclerView.setAdapter(adap);
-
-        mapView=(MapView)findViewById(R.id.map_view);
-        mapView.onCreate(savedInstanceState);
-        mapView.getMapAsync(this);
-
         try{
             MapsInitializer.initialize(getApplicationContext());
         }catch (Exception e){
@@ -92,6 +141,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
             public void onClick(View v) {
                 is_in_edit_mode=false;
                 all_photos_list.get(selected_image_offset).set_new_location(marker.getPosition());
+                Toast.makeText(getApplicationContext(),"new location successfully saved",Toast.LENGTH_LONG).show();
                 recyclerView.setVisibility(View.VISIBLE);
                 edit_location_button_imageview.setVisibility(View.VISIBLE);
                 if(app_is_still_looking_for_images_with_geo_tags)progressBar.setVisibility(View.VISIBLE);
@@ -377,6 +427,20 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 //            background_images_loader_thread.stop();
 //        }
     }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if(requestCode==WRITE_EXTERNAL_STORAGE_PERMISSION_REQUEST){
+            if(grantResults.length>0&&grantResults[0]==PackageManager.PERMISSION_GRANTED){
+                init_activity();
+            }else{
+                //show an explanation and have user decide;
+                if(permission_warning.getVisibility()==View.GONE)permission_warning.setVisibility(View.VISIBLE);
+            }
+        }
+    }
+
     public boolean onKeyDown(int keyCode, KeyEvent event)  {
         if (keyCode == KeyEvent.KEYCODE_BACK && event.getRepeatCount() == 0) {
             try{
@@ -388,7 +452,7 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                         .position(new LatLng(all_photos_list.get(selected_image_offset).location.getLatitude(),all_photos_list.get(selected_image_offset).location.getLongitude())));
                 googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(marker.getPosition(),1000));
                 recyclerView.setVisibility(View.VISIBLE);
-                progressBar.setVisibility(View.VISIBLE);
+                if(app_is_still_looking_for_images_with_geo_tags)progressBar.setVisibility(View.VISIBLE);
                 save_new_location.setVisibility(View.GONE);
                 adap.notifyDataSetChanged();
                 return false;
