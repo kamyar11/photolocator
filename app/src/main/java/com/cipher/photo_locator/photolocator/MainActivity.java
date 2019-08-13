@@ -108,12 +108,14 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
                 handle_permission();
             }
         });
-        if(Build.VERSION.SDK_INT>22)handle_permission();
 
         mapView=(MapView)findViewById(R.id.map_view);
         mapView.onCreate(savedInstanceState);
         mapView.getMapAsync(this);
 
+
+        if(Build.VERSION.SDK_INT>22)handle_permission();
+        else init_activity();
 /*        The app does very limited actions which are dependent on read/write access to storage permission;
          So we continue the rest of the app after the permissions have been grated by user;*/
     }
