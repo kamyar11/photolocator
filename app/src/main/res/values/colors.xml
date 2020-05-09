@@ -3,6 +3,5 @@
     <color name="colorPrimary">#3F51B5</color>
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorAccent">#FF4081</color>
-    <color name="sellected_item">#0c1461</color>
-    <color name="not_sellected_item">#525252</color>
+    <color name="recycler_items_background_color">#40404B</color>
 </resources>

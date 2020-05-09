@@ -4,28 +4,23 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.location.Location;
 import android.media.ExifInterface;
-import android.os.AsyncTask;
-import android.widget.Toast;
 
 import com.google.android.gms.maps.model.LatLng;
 
+import java.io.File;
 import java.text.SimpleDateFormat;
 
-import static com.cipher.photo_locator.photolocator.MainActivity.calculateInSampleSize;
+import static com.cipher.photo_locator.photolocator.easyFileManager.calculateInSampleSize;
 
-/**
- * Created by root on 7/27/18.
- */
-
-public class Photo_info_and_exif_data_structure {
+public class photo_info {
     public String file_path,date;
     public Bitmap bitmap;
     public Location location=new Location("");
     public boolean is_sellected=false,has_location=false;
     public ExifInterface exifInterface;
 
-    public Photo_info_and_exif_data_structure(String File_address){
-        file_path=File_address;
+    public photo_info(String File_address){
+        file_path=new File(File_address).getPath();
         try{
             exifInterface=new ExifInterface(this.file_path);
             float latlong[]=new float[2];
@@ -41,11 +36,8 @@ public class Photo_info_and_exif_data_structure {
         }catch (Exception e){
             e.printStackTrace();
         }
-
     }
-
-
-    public void load_image_bitmap(){
+    public void load_Image_bitmap(){
         //to improve memory and performance,
         // only load this data when view is getting bound in RecyclerView.Adapter in a non ui thread
         BitmapFactory.Options options=new BitmapFactory.Options();
